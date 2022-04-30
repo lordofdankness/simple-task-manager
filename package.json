@@ -8,6 +8,8 @@
   "author": "lordofdankness",
   "license": "ISC",
   "dependencies": {
-    "mongodb": "^4.5.0"
+    "mongodb": "^4.5.0",
+    "mongoose": "^6.3.0",
+    "validator": "^13.7.0"
   }
 }
