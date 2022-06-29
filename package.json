@@ -3,13 +3,20 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
   "keywords": [],
   "author": "lordofdankness",
   "license": "ISC",
   "dependencies": {
+    "express": "^4.18.1",
     "mongodb": "^4.5.0",
     "mongoose": "^6.3.0",
     "validator": "^13.7.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.3.3"
   }
 }
