@@ -1,6 +1,6 @@
 const express = require('express');
 const taskRouter = new express.Router();
-const Task = require('../schemas/Task');
+const Task = require('../models/Task');
 
 taskRouter.post('/tasks', async (req, res) => {
     try {
@@ -72,8 +72,12 @@ taskRouter.patch('/tasks/:id', async (req, res) => {
     });
     if (!isValidUpdate) return res.status(400).send({ error: 'Invalid update' });
     try {
-        const task = await Task.findByIdAndUpdate(_id, req.body, { new: true, runValidators: true });
+        const task = await Task.findById(_id);
         if (!task) return res.status(404).send('Task not found');
+        updates.forEach((update) => {
+            task[ update ] = req.body[ update ];
+        });
+        await task.save();
         res.status(200).send(task);
     } catch (error) {
         res.status(500).send(error);

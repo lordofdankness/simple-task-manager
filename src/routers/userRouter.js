@@ -1,12 +1,14 @@
 const express = require('express');
 const userRouter = new express.Router();
-const User = require('../schemas/User');
+const User = require('../models/User');
+const auth = require('../middleware/auth');
 
 userRouter.post('/users', async (req, res) => {
     try {
         const user = new User(req.body);
         await user.save();
-        res.status(201).send(user);
+        const token = await user.generateAuthToken();
+        res.status(201).send({ user, token });
     } catch (error) {
         res.status(400).send(error);
     }
@@ -17,7 +19,20 @@ userRouter.post('/users', async (req, res) => {
     // });
 });
 
-userRouter.get('/users', async (req, res) => {
+userRouter.post('/users/login', async (req, res) => {
+    const { email, password } = req.body;
+    try {
+        const user = await User.findByCredentials(email, password);
+        const token = await user.generateAuthToken();
+        res.send({ user, token });
+    } catch (error) {
+        res.status(400).send(error);
+    }
+});
+
+// By putting the custom auth function as the second argument we use the custom middleware only on the route we choose.
+// After next() is called on our middleware the async function will run
+userRouter.get('/users', auth, async (req, res) => {
     try {
         const users = await User.find();
         res.status(200).send(users);
@@ -61,8 +76,12 @@ userRouter.patch('/users/:id', async (req, res) => {
     });
     if (!isValidUpdate) return res.status(400).send({ error: 'Invalid update' });
     try {
-        const user = await User.findByIdAndUpdate(_id, req.body, { new: true });
+        const user = await User.findById(_id);
         if (!user) return res.status(404).send('User not found');
+        updates.forEach((update) => {
+            user[ update ] = req.body[ update ];
+        });
+        await user.save();
         res.status(200).send(user);
     } catch (error) {
         res.status(500).send(error);
