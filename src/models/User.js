@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const Task = require('../models/Task');
 
 const userSchema = new mongoose.Schema({
 	name: {
@@ -40,12 +41,18 @@ const userSchema = new mongoose.Schema({
 			}
 		},
 	},
-	tokens: [ {
+	tokens: [{
 		token: {
 			type: String,
 			required: true
 		}
-	} ]
+	}]
+});
+
+userSchema.virtual('tasks', {
+	ref: 'Task',
+	localField: '_id',
+	foreignField: 'owner'
 });
 
 userSchema.methods.generateAuthToken = async function () {
@@ -65,6 +72,15 @@ userSchema.statics.findByCredentials = async (email, password) => {
 	return user;
 };
 
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#tojson_behavior
+userSchema.methods.toJSON = function () {
+	const user = this;
+	const userObject = user.toObject();
+	delete userObject.password;
+	delete userObject.tokens;
+	return userObject;
+};
+
 // Pre middleware functions are executed one after another, when each middleware calls next.
 // This middleware bypasses updates so we will use the save method to update a document.
 // Hash the plain text password.
@@ -72,6 +88,13 @@ userSchema.pre('save', async function (next) {
 	if (this.isModified('password')) {
 		this.password = await bcrypt.hash(this.password, 9);
 	}
+	next();
+});
+
+// Delete user tasks when user is removed.
+userSchema.pre('remove', async function (next) {
+	const user = this;
+	await Task.deleteMany({ owner: user._id });
 	next();
 });
 
