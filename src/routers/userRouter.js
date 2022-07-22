@@ -11,16 +11,11 @@ userRouter.post('/users', async (req, res) => {
         const user = new User(req.body);
         await user.save();
         const token = await user.generateAuthToken();
-        // sendWelcomeEmail(user.email, user.name);
+        sendWelcomeEmail(user.email, user.name);
         res.status(201).send({ user, token });
     } catch (error) {
         res.status(400).send(error);
     }
-    // user.save().then(() => {
-    // 	res.status(201).send(user);
-    // }).catch(() => {
-    // 	res.status(400).send(e);
-    // });
 });
 
 userRouter.post('/users/login', async (req, res) => {
@@ -74,14 +69,6 @@ userRouter.get('/users/:id', async (req, res) => {
     } catch (error) {
         res.status(500).send(error);
     }
-    // User.findById(_id).then((user) => {
-    // 	if (!user) {
-    // 		return res.status(404).send();
-    // 	}
-    // 	res.status(200).send(user);
-    // }).catch(() => {
-    // 	res.status(500).send(e);
-    // });
 });
 
 userRouter.patch('/users/me', auth, async (req, res) => {
