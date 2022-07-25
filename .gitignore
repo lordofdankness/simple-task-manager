@@ -1,2 +1,5 @@
 node_modules/
-.env
+.env.development
+.env.test
+tests/playground.test.js
+tests/fixtures/IMG_1045.PNG

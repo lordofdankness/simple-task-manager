@@ -3,6 +3,7 @@ const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(sendGridApiKey);
 
 const sendWelcomeEmail = function (email, name) {
+    if (process.env.NODE_ENV === 'development') return;
     sgMail.send({
         to: email,
         from: 'lordofdankness@yandex.com',
